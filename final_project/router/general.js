@@ -5,8 +5,20 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 public_users.post("/register", (req, res) => {
-    //Write your code here
-    return res.status(300).json({ message: "Yet to be implemented" });
+    const { username, password } = req.body;
+    if (username === "" || password === "") {
+        return res
+            .status(400)
+            .send({ message: "Username or password cannot be empty" });
+    }
+    if (isValid(username)) {
+        users.push({ username, password });
+        return res.send({ message: "User created successfully" });
+    } else {
+        return res
+            .status(400)
+            .send({ message: "Username already exists or its invalid" });
+    }
 });
 
 // Get the book list available in the shop
@@ -76,7 +88,9 @@ public_users.get("/review/:isbn", function (req, res) {
     if (bookByIsbn) {
         return res.send(bookByIsbn.reviews);
     } else {
-        return res.status(400).send({ message: "No Book found for given ISBN" });
+        return res
+            .status(400)
+            .send({ message: "No Book found for given ISBN" });
     }
 });
 
