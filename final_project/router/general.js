@@ -16,8 +16,16 @@ public_users.get("/", function (req, res) {
 
 // Get book details based on ISBN
 public_users.get("/isbn/:isbn", function (req, res) {
-    //Write your code here
-    return res.status(300).json({ message: "Yet to be implemented" });
+    const isbn = req.params.isbn;
+    if (isNaN(isbn)) {
+        return res.status(400).send({ message: "ISBN should be numeric" });
+    }
+    const bookByIsbn = books[isbn];
+    if (bookByIsbn) {
+        return res.send(bookByIsbn);
+    } else {
+        return res.status(400).send({ message: "Book not found" });
+    }
 });
 
 // Get book details based on author
