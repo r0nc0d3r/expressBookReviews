@@ -86,21 +86,34 @@ public_users.get("/author/:author", async function (req, res) {
 });
 
 // Get all books based on title
-public_users.get("/title/:title", function (req, res) {
-    const title = req.params.title;
-    if (title !== "" && title.length > 0) {
-        const bookEntries = Object.entries(books);
-        const booksByTitle = bookEntries.filter(([_, values]) => {
-            return values.title.toLowerCase() === title.toLowerCase();
-        });
-        if (booksByTitle.length > 0) {
-            const books = booksByTitle.map(([_, values]) => values);
-            return res.send(books);
+public_users.get("/title/:title", async function (req, res) {
+    try {
+        const title = req.params.title;
+        if (title !== "" && title.length > 0) {
+            const booksByTitle = await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const bookEntries = Object.entries(books);
+                    const filteredBooks = bookEntries.filter(([_, values]) => {
+                        return (
+                            values.title.toLowerCase() === title.toLowerCase()
+                        );
+                    });
+                    resolve(filteredBooks);
+                }, 100);
+            });
+            if (booksByTitle.length > 0) {
+                const books = booksByTitle.map(([_, values]) => values);
+                return res.send(books);
+            } else {
+                return res.status(400).send({ message: "Book not found" });
+            }
         } else {
-            return res.status(400).send({ message: "Book not found" });
+            return res
+                .status(400)
+                .send({ message: "Title should not be blank" });
         }
-    } else {
-        return res.status(400).send({ message: "Title should not be blank" });
+    } catch (error) {
+        return res.status(500).send({ message: "Error fetching book" });
     }
 });
 
