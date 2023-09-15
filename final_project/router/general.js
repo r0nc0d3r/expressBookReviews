@@ -34,16 +34,22 @@ public_users.get("/", async function (req, res) {
 });
 
 // Get book details based on ISBN
-public_users.get("/isbn/:isbn", function (req, res) {
-    const isbn = req.params.isbn;
-    if (isNaN(isbn)) {
-        return res.status(400).send({ message: "ISBN should be numeric" });
-    }
-    const bookByIsbn = books[isbn];
-    if (bookByIsbn) {
-        return res.send(bookByIsbn);
-    } else {
-        return res.status(400).send({ message: "Book not found" });
+public_users.get("/isbn/:isbn", async function (req, res) {
+    try {
+        const isbn = req.params.isbn;
+        if (isNaN(isbn)) {
+            return res.status(400).send({ message: "ISBN should be numeric" });
+        }
+        const bookByIsbn = await new Promise((resolve, reject) => {
+            setTimeout(() => resolve(books[isbn]), 100);
+        });
+        if (bookByIsbn) {
+            return res.status(200).send(bookByIsbn);
+        } else {
+            return res.status(400).send({ message: "Book not found" });
+        }
+    } catch (error) {
+        return res.status(500).send({ message: "Error fetching book" });
     }
 });
 
