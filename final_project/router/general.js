@@ -54,21 +54,34 @@ public_users.get("/isbn/:isbn", async function (req, res) {
 });
 
 // Get book details based on author
-public_users.get("/author/:author", function (req, res) {
-    const author = req.params.author;
-    if (author !== "" && author.length > 0) {
-        const bookEntries = Object.entries(books);
-        const booksByAuthor = bookEntries.filter(([_, values]) => {
-            return values.author.toLowerCase() === author.toLowerCase();
-        });
-        if (booksByAuthor.length > 0) {
-            const books = booksByAuthor.map(([_, values]) => values);
-            return res.send(books);
+public_users.get("/author/:author", async function (req, res) {
+    try {
+        const author = req.params.author;
+        if (author !== "" && author.length > 0) {
+            const booksByAuthor = await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const bookEntries = Object.entries(books);
+                    const filteredBooks = bookEntries.filter(([_, values]) => {
+                        return (
+                            values.author.toLowerCase() === author.toLowerCase()
+                        );
+                    });
+                    resolve(filteredBooks);
+                }, 100);
+            });
+            if (booksByAuthor.length > 0) {
+                const books = booksByAuthor.map(([_, values]) => values);
+                return res.send(books);
+            } else {
+                return res.status(400).send({ message: "Book not found" });
+            }
         } else {
-            return res.status(400).send({ message: "Book not found" });
+            return res
+                .status(400)
+                .send({ message: "Author should not be blank" });
         }
-    } else {
-        return res.status(400).send({ message: "Author should not be blank" });
+    } catch (error) {
+        return res.status(500).send({ message: "Error fetching book" });
     }
 });
 
